@@ -11,7 +11,6 @@ def hello_world():
 
 
 
-
 @app.route('/app', methods=['GET'])
 @app.route('/app', methods=['GET'])
 def main():
@@ -41,4 +40,5 @@ def main():
     return json.dumps(response)
 
 if __name__ == "__main__":
+    db.create_all()
     app.run(debug=False, host='0.0.0.0', port=5000)
