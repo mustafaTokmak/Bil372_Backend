@@ -1,0 +1,48 @@
+version: "3.3"
+
+services:
+  postgres:
+    image: postgres
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: mustafa
+      POSTGRES_PASSWORD: magic_pass
+      POSTGRES_DB: test
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/data
+    networks: 
+      - postgres_network
+          
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks: 
+      - postgres_network
+
+  app:
+    image: app
+    container_name: app
+    build: 
+        context: ./app
+        dockerfile: Dockerfile
+    depends_on: 
+        - postgres
+    networks: 
+        - postgres_network
+    ports:
+      - 5000:5000
+          
+networks:
+  postgres_network:
+    driver: bridge
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: $HOME/data/postgres
+      o: bind
