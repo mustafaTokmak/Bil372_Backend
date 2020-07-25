@@ -38,9 +38,9 @@ def register_booking():
     content = request.get_json()
     for i in range(100):
         client = Client.query.all()[i%10]
-        
+
         print(client)
-        booking = Booking(client_id=client.id,client=client)
+        booking = Booking(client_id=client.id)
         db.session.add(booking)
         db.session.commit()
     return json.dumps(response)
