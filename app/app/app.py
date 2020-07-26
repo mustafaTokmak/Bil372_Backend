@@ -63,7 +63,12 @@ def add_airports():
         city = City(country=country,name=city_name)
 
         airport = Airport(name=name,city=city,code=code)
-        
+        if(Airport.query.filter_by(name=name).first()):
+            airports = Airport.query.filter_by(name=name)
+            print("TRUE")
+            print(len())
+        else:
+            print("FALSE")
         
         db.session.add(city)
         db.session.add(country)

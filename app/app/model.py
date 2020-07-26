@@ -109,19 +109,9 @@ class Technician(db.Model):
     responsible_checks = db.relationship("Check", back_populates="technician")
     firstname = db.Column(db.String(120))
     lastname = db.Column(db.String(120))
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120))
     password = db.Column(db.String(80), nullable=False) #HASH
     
-    salary = db.Column(db.Integer)
-    
-    model_id = db.Column(db.Integer, db.ForeignKey('aircraft_model.id'))
-    speciality_models = db.relationship("Aircraft_model",secondary=technician_speciality, back_populates="technicians")
-
-class Technician(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    responsible_checks = db.relationship("Check", back_populates="technician")
-    firstname = db.Column(db.String(120))
-    lastname = db.Column(db.String(120))
     salary = db.Column(db.Integer)
     
     model_id = db.Column(db.Integer, db.ForeignKey('aircraft_model.id'))
