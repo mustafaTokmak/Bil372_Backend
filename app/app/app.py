@@ -1,5 +1,5 @@
 from model import db
-from model import Client,Booking,Flight,Airport,Route
+from model import Client,Booking,Flight,Airport,Route,Country,City
 from model import app
 from flask import request
 import random
@@ -53,13 +53,25 @@ def add_airports():
     content = request.get_json()
     for i in range(1):
         name = "esenboga" + str(random.randint(0,10000000000))
-        city = "ankara" + str(random.randint(0,10000000000))
-        country = "turkey"+str(random.randint(0,10000000000))
         code = "ESB" + str(random.randint(0,10000000000))
-        airport = Airport(name=name,city=city,country=country,code=code)
-        print(airport)
-        db.session.add(airport)
+        
+        
+        country_name = "turkey"+str(random.randint(0,10000000000))
+        country = Country(name=country_name)
+        
+        city_name = "ankara" + str(random.randint(0,10000000000)) 
+        city = City(country=country,name=city_name)
+
+        airport = Airport(name=name,city=city,code=code)
+        
+        
+        db.session.add(city)
+        db.session.add(country)
+        #db.session.add(airport)
         db.session.commit()
+        
+
+        
     return json.dumps(response)
 
 
