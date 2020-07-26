@@ -81,6 +81,9 @@ class Pilot(db.Model):
     flights = db.relationship("Flight",secondary=pilots_table,back_populates="pilots")
     firstname = db.Column(db.String(120))
     lastname = db.Column(db.String(120))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(80), nullable=False) #HASH
+    
     salary = db.Column(db.Integer)
     speciality_models = db.relationship("Aircraft_model",secondary=pilot_speciality, back_populates="pilots")
     experience = (db.Integer)
@@ -88,10 +91,42 @@ class Pilot(db.Model):
 class Cabin_Member(db.Model):
     __tablename__ = 'cabin_member'
     id = db.Column(db.Integer, primary_key=True)
+    firstname = db.Column(db.String(120))
+    lastname = db.Column(db.String(120))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(80), nullable=False) #HASH
+    
+    salary = db.Column(db.Integer)
     flights = db.relationship("Flight",secondary=cabin_crew,back_populates="cabin_crew")
+
+
+technician_speciality = db.Table('technician_speciality',
+    db.Column('technician_id', db.Integer, db.ForeignKey('technician.id')),
+    db.Column('aircraft_model_id', db.Integer, db.ForeignKey('aircraft_model.id'))
+)
+class Technician(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    responsible_checks = db.relationship("Check", back_populates="technician")
+    firstname = db.Column(db.String(120))
+    lastname = db.Column(db.String(120))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(80), nullable=False) #HASH
+    
+    salary = db.Column(db.Integer)
+    
+    model_id = db.Column(db.Integer, db.ForeignKey('aircraft_model.id'))
+    speciality_models = db.relationship("Aircraft_model",secondary=technician_speciality, back_populates="technicians")
+
+class Technician(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    responsible_checks = db.relationship("Check", back_populates="technician")
     firstname = db.Column(db.String(120))
     lastname = db.Column(db.String(120))
     salary = db.Column(db.Integer)
+    
+    model_id = db.Column(db.Integer, db.ForeignKey('aircraft_model.id'))
+    speciality_models = db.relationship("Aircraft_model",secondary=technician_speciality, back_populates="technicians")
+
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -107,23 +142,6 @@ class Ticket(db.Model):
     flight = db.relationship("Flight", back_populates="tickets")
     
     seat_no = db.Column(db.Integer)
-
-
-technician_speciality = db.Table('technician_speciality',
-    db.Column('technician_id', db.Integer, db.ForeignKey('technician.id')),
-    db.Column('aircraft_model_id', db.Integer, db.ForeignKey('aircraft_model.id'))
-)
-class Technician(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    responsible_checks = db.relationship("Check", back_populates="technician")
-    firstname = db.Column(db.String(120))
-    lastname = db.Column(db.String(120))
-    salary = db.Column(db.Integer)
-    
-    model_id = db.Column(db.Integer, db.ForeignKey('aircraft_model.id'))
-    speciality_models = db.relationship("Aircraft_model",secondary=technician_speciality, back_populates="technicians")
-
-
 
 class Aircraft(db.Model):
     id = db.Column(db.Integer, primary_key=True)
