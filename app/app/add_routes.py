@@ -49,7 +49,7 @@ for row in data:
     if(counter % 100 ==0):
         print(counter)
 
-db.session.commit()
+    db.session.commit()
 
 last = time.time()
 t = last - start
@@ -381,7 +381,7 @@ for i in range(300):
     db.session.add(flight_obj)
     db.session.commit()
     counter += 1
-    if(counter % 2 ==0):
+    
     #Tickets
     #ticket price capacity arttıkca azalıyor.
     #ticket price duration arttıkca artıyor.

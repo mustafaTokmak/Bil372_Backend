@@ -84,7 +84,7 @@ def get_avaliable_tickets_for_flight_id(flight_id):
     return tickets
 tickets = get_avaliable_tickets_for_flight_id(flight_id)
 print(tickets)
-# uçuş biglileri booking no seat no vs 
+# uçuş bilgileri booking no seat no vs 
 
 # pilot kendi uçuşlarını sırasıyla görme 
 #technician
