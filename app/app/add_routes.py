@@ -364,13 +364,19 @@ for i in range(10000):
     #ticket price duration arttıkca artıyor.
     number_of_col = aircraft.model.number_of_col
     number_of_row = aircraft.model.number_of_row
+    capacity = number_of_col * number_of_row
+
+    base_price = 200 #180 kisi 60 dk 
+    price = (base_price*(flight_duration/60)) 
+    price = price * (1/(capacity/(30*6)))
+
     columns = string.ascii_letters[:number_of_col]
     for row in range(1,number_of_row+1):
         for c in columns:
             seat_no = c.upper()+str(row)
-            ticket_obj = Ticket(seat_no=seat_no,flight=flight_obj)
+            ticket_obj = Ticket(seat_no=seat_no,flight=flight_obj,price=price)
             db.session.add(ticket_obj)
-    
+db.session.commit()
 
 
 
