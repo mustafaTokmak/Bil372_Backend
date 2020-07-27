@@ -6,7 +6,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/mustafa/test.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mustafa:magic_pass@localhost:5432/test'
-app.config['SQLALCHEMY_ECHO'] = True
+app.config['SQLALCHEMY_ECHO'] = False
 db = SQLAlchemy(app)
 
 
@@ -16,7 +16,8 @@ class Client(db.Model):
     phone_number = db.Column(db.String(80))
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False) #HASH
-    first_name = db.Column(db.String(80))
+    firstname = db.Column(db.String(120))
+    lastname = db.Column(db.String(120))
     reservations = db.relationship("Booking", back_populates="client")
 
     def __repr__(self):
@@ -73,7 +74,15 @@ class Flight(db.Model):
     tickets = db.relationship("Ticket", back_populates="flight")
     
 
-
+class Admin(db.Model):
+    __tablename__ = 'admin'
+    id = db.Column(db.Integer, primary_key=True)
+    firstname = db.Column(db.String(120))
+    lastname = db.Column(db.String(120))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(80), nullable=False) #HASH
+    
+    
 
 class Pilot(db.Model):
     __tablename__ = 'pilot'
@@ -83,10 +92,9 @@ class Pilot(db.Model):
     lastname = db.Column(db.String(120))
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False) #HASH
-    
+    experience = db.Column(db.Integer)
     salary = db.Column(db.Integer)
-    speciality_models = db.relationship("Aircraft_model",secondary=pilot_speciality, back_populates="pilots")
-    experience = (db.Integer)
+    speciality_models = db.relationship("Aircraft_Model",secondary=pilot_speciality, back_populates="pilots")
     #if aircraft seat == bu uçuşa ait satılmış bilet sayısı
 class Cabin_Member(db.Model):
     __tablename__ = 'cabin_member'
@@ -115,7 +123,7 @@ class Technician(db.Model):
     salary = db.Column(db.Integer)
     
     model_id = db.Column(db.Integer, db.ForeignKey('aircraft_model.id'))
-    speciality_models = db.relationship("Aircraft_model",secondary=technician_speciality, back_populates="technicians")
+    speciality_models = db.relationship("Aircraft_Model",secondary=technician_speciality, back_populates="technicians")
 
 
 class Ticket(db.Model):
@@ -131,23 +139,25 @@ class Ticket(db.Model):
     flight_id = db.Column(db.Integer, db.ForeignKey('flight.id'))
     flight = db.relationship("Flight", back_populates="tickets")
     
-    seat_no = db.Column(db.Integer)
+    seat_no = db.Column(db.String(20))
 
 class Aircraft(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    number_of_col = db.Column(db.Integer)
-    number_of_row = db.Column(db.Integer)
-    
+    tail_number = db.Column(db.String(20))
     model_id = db.Column(db.Integer, db.ForeignKey('aircraft_model.id'))
-    model = db.relationship("Aircraft_model", back_populates="aircrafts")
+    model = db.relationship("Aircraft_Model", back_populates="aircrafts")
 
     used_flights = db.relationship("Flight", back_populates="aircraft")
     checks = db.relationship("Check", back_populates="aircraft")
 
-class Aircraft_model(db.Model):
+
+class Aircraft_Model(db.Model):
     __tablename__ = 'aircraft_model'
     id = db.Column(db.Integer, primary_key=True)
     aircrafts = db.relationship("Aircraft", back_populates="model")
+
+    number_of_col = db.Column(db.Integer)
+    number_of_row = db.Column(db.Integer)
 
     technicians = db.relationship("Technician",secondary=technician_speciality, back_populates="speciality_models")
 
@@ -155,6 +165,7 @@ class Aircraft_model(db.Model):
     
 
     model_name = db.Column(db.String(120))
+    model_code = db.Column(db.String(120))
 
 class Check(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -203,7 +214,7 @@ class Airport(db.Model):
     as_departure =  db.relationship("Departure_Airport",back_populates="dep_airport")
     
 
-    name = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(200), nullable=False)
     city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
     city = db.relationship('City',back_populates="airports")
     
@@ -214,12 +225,12 @@ class Airport(db.Model):
 class Country(db.Model):
     __tablename__ = 'country'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(200), nullable=False)
     cities = db.relationship('City',back_populates="country")
 class City(db.Model):
     __tablename__ = 'city'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(200), nullable=False)
     
     country_id = db.Column(db.Integer, db.ForeignKey('country.id'))
     country = db.relationship('Country',back_populates="cities")
