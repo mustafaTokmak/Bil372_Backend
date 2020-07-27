@@ -1,5 +1,5 @@
 from model import db
-from model import Client,Booking,Flight,Airport,Route,Country,City,Departure_Airport,Arrival_Airport,Aircraft_Model,Aircraft,Pilot,Technician,Cabin_Member,Client
+from model import Client,Booking,Flight,Airport,Route,Country,City,Departure_Airport,Arrival_Airport,Aircraft_Model,Aircraft,Pilot,Technician,Cabin_Member,Client,Ticket,Admin,Check
 import random
 import hashlib
 import datetime 
@@ -147,19 +147,15 @@ print("time"+str(t))
 
 
 
-for i in range(300):
+for i in range(30):
     tail_num1 = random.randint(10,99)
     tail_num2 = random.randint(10,1000)
     letter = random.choice(string.ascii_letters).upper()
     tail_number = letter + str(tail_num1) + "-" + str(tail_num2)
-    print(tail_number)
 
     models = Aircraft_Model.query.all()
-    print(len(models))
     model_index = random.randint(0,len(models)-1)
-    print(model_index)
     model = models[model_index]
-    print(model)
 
     aircraft_obj = Aircraft(tail_number=tail_number,model=model)
     db.session.add(aircraft_obj)
@@ -181,7 +177,6 @@ for i in range(1000):
     m = hashlib.sha256()
     m.update(password_plain_text.encode())
     password = m.digest().hex()
-    print(password)
     
 
     speciality_models = []
@@ -207,7 +202,7 @@ for i in range(1000):
     m = hashlib.sha256()
     m.update(password_plain_text.encode())
     password = m.digest().hex()
-    print(password)
+    
     
 
     speciality_models = []
@@ -233,7 +228,6 @@ for i in range(2000):
     m = hashlib.sha256()
     m.update(password_plain_text.encode())
     password = m.digest().hex()
-    print(password)
     
     
     technician_obj = Cabin_Member(firstname=firstname,lastname=lastname,email=email,password=password,salary=salary)
@@ -252,7 +246,6 @@ for i in range(5):
     m = hashlib.sha256()
     m.update(password_plain_text.encode())
     password = m.digest().hex()
-    print(password)
     
     
     cabin_member_obj = Cabin_Member(firstname=firstname,lastname=lastname,email=email,password=password)
@@ -265,7 +258,8 @@ routes = Route.query.all()
 aircrafts = Aircraft.query.all()
 all_pilots = Pilot.query.all()
 cabin_members = Cabin_Member.query.all()
-for i in range(10000):
+counter = 0 
+for i in range(300):
     #Flight time
     flight_duration = random.randint(50,750)
     base_date = datetime.datetime.now() - datetime.timedelta(days=180)
@@ -291,61 +285,87 @@ for i in range(10000):
     #choose aircraft
     #TODO check avaliable
     #2 gün üstüste uçuş pilot aircraft ve crew member için yok
+    is_aircraft_assigned = True
+    aircraft_counter = 0
     while(True):
+        aircraft_counter += 1
+        if aircraft_counter > 30:
+            is_aircraft_assigned = False
+            break
         aircraft_index = random.randint(0,len(aircrafts)-1)
         aircraft = aircrafts[aircraft_index]
         avaliable = True
         for f in aircraft.used_flights:
-            if not f.estimated_arrival_date_time < estimated_departure_date_time - datetime.timedelta(days=1) or f.estimated_departure_date_time > estimated_arrival_date_time + datetime.timedelta(days=1) :
+           
+            if not f.estimated_arrival_date_time < (estimated_departure_date_time - datetime.timedelta(days=1)) or f.estimated_departure_date_time > (estimated_arrival_date_time + datetime.timedelta(days=1)) :
                 avaliable = False
                 break
         if avaliable:
             break
+    if not is_aircraft_assigned:
+        continue
 
     #choose route
-    print(len(routes))
     route_index = random.randint(0,len(routes)-1)
-    print(route_index)
     route = routes[route_index]
     
 
     #choose pilots 
     #TODO check avaliable
     pilots  = []
+    pilot_counter = 0
+    is_pilot_assigned = True
     for i in range(2):
         while(True):
+            pilot_counter += 1
+            #avoid infinite loop
+            if pilot_counter > 30:
+                 is_pilot_assigned = False
             pilot_index = random.randint(0,len(all_pilots)-1)
             pilot = all_pilots[pilot_index]
             avaliable = True
             for f in pilot.flights:
-                if not f.estimated_arrival_date_time < estimated_departure_date_time - datetime.timedelta(days=1) or f.estimated_departure_date_time > estimated_arrival_date_time + datetime.timedelta(days=1) :
+               
+                if not f.estimated_arrival_date_time < (estimated_departure_date_time - datetime.timedelta(days=1)) or f.estimated_departure_date_time > (estimated_arrival_date_time + datetime.timedelta(days=1)) :
                     avaliable = False
                     break
+            if not aircraft.model in pilot.speciality_models:
+                avaliable = False
+                break
             if avaliable:
                 break
 
         pilots.append(pilot)
-    
+    if not is_pilot_assigned:
+        continue
     #choose cabin_crew
     #TODO check avaliable
     cabin_crew = []
+    cabin_member_counter = 0
+    is_cabin_member_assigned = True
     for i in range(4):
-        print(len(pilots))
         cabin_member_index = random.randint(0,len(cabin_members)-1)
-        print(cabin_member_index)
         cabin_member = cabin_members[cabin_member_index]
 
         while(True):
             cabin_member_index = random.randint(0,len(cabin_members)-1)
             cabin_member = cabin_members[cabin_member_index]
             avaliable = True
+            cabin_member_counter += 1
+            #avoid infinite loop
+            if cabin_member_counter > 30:
+                is_cabin_member_assigned = False
             for f in cabin_member.flights:
-                if not f.estimated_arrival_date_time < estimated_departure_date_time - datetime.timedelta(days=1) or f.estimated_departure_date_time > estimated_arrival_date_time + datetime.timedelta(days=1) :
+               
+
+                if not f.estimated_arrival_date_time < (estimated_departure_date_time - datetime.timedelta(days=1)) or f.estimated_departure_date_time > (estimated_arrival_date_time + datetime.timedelta(days=1)) :
                     avaliable = False
                     break
             if avaliable:
                 break
         cabin_crew.append(cabin_member)
+    if not is_cabin_member_assigned:
+        continue
     if estimated_arrival_date_time < now:        
         flight_obj = Flight(route=route,aircraft=aircraft,
         actual_departure_date_time=actual_departure_date_time,
@@ -359,6 +379,9 @@ for i in range(10000):
         estimated_arrival_date_time=estimated_arrival_date_time,
         pilots=pilots,cabin_crew=cabin_crew)
     db.session.add(flight_obj)
+    db.session.commit()
+    counter += 1
+    if(counter % 2 ==0):
     #Tickets
     #ticket price capacity arttıkca azalıyor.
     #ticket price duration arttıkca artıyor.
@@ -376,30 +399,175 @@ for i in range(10000):
             seat_no = c.upper()+str(row)
             ticket_obj = Ticket(seat_no=seat_no,flight=flight_obj,price=price)
             db.session.add(ticket_obj)
-db.session.commit()
+    db.session.commit()
 
 
 
 #clients
 password_plain_text  = "1234asdf"
-for i in range(10000):
+counter = 0
+for i in range(1000):
     a = i
-    firstname = "mustafa" + str(random.randint(0,10000))
-    lastname = "tokmak" + str(random.randint(0,10000))
+    firstname = "mustafa" + str(random.randint(0,100000))
+    lastname = "tokmak" + str(random.randint(0,100000))
     email = firstname+lastname+"@airline.com"
-    phone_number = str(random.randint(10*1000,99*1000)) + str(random.randint(10*1000,99*1000))
+    phone_number = str(random.randint(100*1000,999*1000)) + str(random.randint(10*1000,99*1000))
     m = hashlib.sha256()
     m.update(password_plain_text.encode())
     password = m.digest().hex()
-    print(password)
-    
+    counter += 1
+    if(counter % 100 == 0 ):
+        print(counter)
     
     client_obj = Client(firstname=firstname,lastname=lastname,phone_number=phone_number,email=email,password=password)
     db.session.add(client_obj)
-db.session.commit()
+    db.session.commit()
+
+
+last = time.time()
+t = last - start
+
+#add admin
+
+password_plain_text  = "1234asdf"
+for i in range(5):
+    firstname = "mustafa" + str(random.randint(0,100000))
+    lastname = "tokmak" + str(random.randint(0,100000))
+    email = firstname+lastname+"@airline.com"
+    m = hashlib.sha256()
+    m.update(password_plain_text.encode())
+    password = m.digest().hex()
+    admin_obj = Admin(firstname=firstname,lastname=lastname,email=email,password=password)
+    db.session.add(admin_obj)
+    db.session.commit()
+
+
+#add checks
+counter = 0
+all_aircrafts = Aircraft.query.all()
+all_technicians = Technician.query.all()
+for aircraft in all_aircrafts:
+    now = datetime.datetime.now()
+    for i in range (-5,6):
+        days = i*30
+        while(True):
+            temp_date = now - datetime.timedelta(days=days)
+            used_flights = aircraft.used_flights
+            is_temp_date_available = True
+            for f in used_flights:
+                dep_date = f.estimated_departure_date_time
+                arr_date = f.estimated_arrival_date_time
+                if dep_date.day == temp_date.day and dep_date.month == temp_date.month and dep_date.year == temp_date.year:
+                    days += 1
+                    is_temp_date_available = False
+                    break
+                elif arr_date.day == temp_date.day and arr_date.month == temp_date.month and arr_date.year == temp_date.year:
+                    days += 1
+                    is_temp_date_available = False
+                    break
+            if is_temp_date_available:
+                break
+        date = temp_date
+    
+        while(True):
+            technician_index = random.randint(0,len(all_technicians)-1)
+            technician = all_technicians[technician_index]
+            avaliable = True
+            
+            for c in technician.responsible_checks:
+                if c.date.day == date.day and c.date.month == date.month and c.date.year == date.year:
+                    avaliable = False
+            if not aircraft.model in technician.speciality_models:
+                avaliable = False
+            if avaliable:
+                break
+        is_checked = False
+        if date < now :
+            is_checked = True
+        check_obj = Check(date=date,aircraft=aircraft,is_checked=is_checked,technician=technician)
+        db.session.add(check_obj)
+        db.session.commit()
+        counter += 1
+        if(counter % 100==0):
+            print(counter)
+                
 
 
 last = time.time()
 t = last - start
 print("time"+str(t))
+         
 
+
+#add bookings 
+now = datetime.datetime.now()
+
+not_avaliable_clients = db.session.query(Client).join(Client.reservations).join(Booking.tickets).join(Ticket.flight).filter(Flight.estimated_departure_date_time<now)
+avaliable_clients = Client.query.except_all(not_avaliable_clients)
+
+
+all_tickets = Ticket.query.all()
+all_clients = Client.query.all()
+
+last = time.time()
+t = last - start
+print("time"+str(t))
+
+for i in range(2000):
+    #all_tickets  = Ticket.query.all().filter_by(is_avaliable=True)
+    ticket_index = random.randint(0,len(all_tickets)-1)
+    ticket = all_tickets[ticket_index]
+    if not ticket.is_avaliable:
+        continue
+    print(i)
+    
+
+    arr_time = ticket.flight.estimated_arrival_date_time
+    dep_time = ticket.flight.estimated_departure_date_time
+    
+    
+    
+    while(True):
+        client_index = random.randint(0,len(all_clients)-1)
+        client = all_clients[client_index]
+        is_avaliable_client = True
+        for r in client.reservations:
+            for t in r.tickets:
+                if not (t.flight.estimated_departure_date_time > arr_time or t.flight.estimated_arrival_date_time < dep_time ):
+                    is_avaliable_client = False
+        if is_avaliable_client:
+            break
+    
+    client_bookings = client.reservations
+    is_new_booking = random.randint(1,100) % 2 == 0 
+    if is_new_booking and client_bookings:
+        booking_index = random.randint(0,len(client_bookings)-1)
+        booking_obj = client_bookings[booking_index]
+    else:
+        booking_code = random.randint(10*1000*1000,99*1000*1000)
+        booking_obj = Booking(client=client,booking_code=booking_code)
+        db.session.add(booking_obj)
+
+    #calculate last price
+    aircraft_model = ticket.flight.aircraft.model
+    capacity = aircraft_model.number_of_col * aircraft_model.number_of_row
+    sold = len(ticket.flight.tickets)
+    price = ticket.price
+    last_price = 0.5*price + (sold/capacity)*3*price # ilk bilet yarı fiyatı son bilet 3.5 kat fiyatı
+    is_avaliable = False
+    
+    ticket.last_price = last_price
+    ticket.booking = booking_obj
+    ticket.is_avaliable = is_avaliable
+    db.session.add(ticket)
+    db.session.commit()
+    
+
+
+
+
+
+
+last = time.time()
+t = last - start
+print("time"+str(t))

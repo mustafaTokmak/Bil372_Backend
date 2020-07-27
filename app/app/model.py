@@ -28,8 +28,9 @@ class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     client = db.relationship("Client", back_populates="reservations")
-
+    
     tickets = db.relationship("Ticket", back_populates="booking")
+    booking_code = db.Column(db.Integer)
     #extras
     def __repr__(self):
         return '<booking_id %r>' % self.id  
@@ -62,11 +63,11 @@ class Flight(db.Model):
     aircraft_id = db.Column(db.Integer, db.ForeignKey('aircraft.id'))
     aircraft = db.relationship("Aircraft", back_populates="used_flights")
 
-    actual_departure_date_time = db.Column(db.Date)
-    actual_arrival_date_time = db.Column(db.Date)
+    actual_departure_date_time = db.Column(db.DateTime)
+    actual_arrival_date_time = db.Column(db.DateTime)
     
-    estimated_departure_date_time = db.Column(db.Date)
-    estimated_arrival_date_time = db.Column(db.Date)
+    estimated_departure_date_time = db.Column(db.DateTime)
+    estimated_arrival_date_time = db.Column(db.DateTime)
 
     pilots = db.relationship("Pilot",secondary=pilots_table,back_populates="flights")
     cabin_crew = db.relationship("Cabin_Member",secondary=cabin_crew,back_populates="flights")
@@ -129,6 +130,7 @@ class Technician(db.Model):
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     price =  db.Column(db.Integer)
+    last_price = db.Column(db.Integer)
     is_avaliable = db.Column(db.Boolean,default=True)
     
     is_checked_in = db.Column(db.Boolean,default=False)
@@ -169,7 +171,7 @@ class Aircraft_Model(db.Model):
 
 class Check(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date)
+    date = db.Column(db.DateTime)
     is_checked = db.Column(db.Boolean)
     aircraft_id = db.Column(db.Integer, db.ForeignKey('aircraft.id'))
     aircraft = db.relationship("Aircraft", back_populates="checks")
