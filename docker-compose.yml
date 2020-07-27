@@ -23,18 +23,18 @@ services:
     networks: 
       - postgres_network
 
-  app:
-    image: app
-    container_name: app
-    build: 
-        context: ./app
-        dockerfile: Dockerfile
-    depends_on: 
-        - postgres
-    networks: 
-        - postgres_network
-    ports:
-      - 5000:5000
+  #app:
+  #  image: app
+  #  container_name: app
+  #  build: 
+  #      context: ./app
+  #      dockerfile: Dockerfile
+  # depends_on: 
+  #       - postgres
+  #  networks: 
+  #      - postgres_network
+  #  ports:
+  #    - 5000:5000
           
 networks:
   postgres_network:
