@@ -3,6 +3,10 @@ from model import Client,Booking,Flight,Airport,Route,Country,City,Departure_Air
 
 import hashlib
 import datetime
+from sqlalchemy import func
+from sqlalchemy import desc
+
+
 #add client 
 def find_user_type(email,password):
     user_type = ""
@@ -83,26 +87,108 @@ def get_avaliable_tickets_for_flight_id(flight_id):
     
     return tickets
 tickets = get_avaliable_tickets_for_flight_id(flight_id)
-print(tickets)
+print("get_avaliable_tickets_for_flight_id")
+print(len(tickets))
+#print(tickets)
 # uçuş bilgileri booking no seat no vs 
 
 # pilot kendi uçuşlarını sırasıyla görme 
+def get_pilot_flights(email):
+    flights = db.session.query(Pilot).filter_by(email=email).first().flights
+    for f in flights:
+        print(str(f.estimated_departure_date_time))
+    #TODO sort flights
+    return flights
+pilot_email = "mustafa9166tokmak6229@airline.com"
+
+flights = get_pilot_flights(pilot_email)
+print("get_pilot_flights")
+print(len(flights))
+
 #technician
+
 #crew 
+def get_cabin_member_flights(email):
+    flights = db.session.query(Cabin_Member).filter_by(email=email).first().flights
+    for f in flights:
+        print(str(f.estimated_departure_date_time))
+        print(str(f.estimated_departure_date_time))
+    #TODO sort flights
+    return flights
+cabin_member_email = "mustafa7565tokmak4096@airline.com"
+
+flights = get_cabin_member_flights(cabin_member_email)
+print("get_cabin_member_flights")
+print(len(flights))
+
 
 # en çok uçan pilot 
+#TODO flight duration eklenecek
+def get_most_flights_pilot():
+    a = db.session.query(Pilot).join(Pilot.flights).query(func.sum(Flight.score).label("total_score"))
+    print(len(a))
+#print("get_most_flights_pilot")
+#get_most_flights_pilot()
+
+
+
 # en çok uçan uçak
-# en çok bakım yapan 
-# teknisyen bakım ekle 
+
+# en çok bakım yapan teknisyen 
+
+#uçaga 
 
 # pilot uçuş iptal
 
 # 2 şehir arası uçuş var mı 
 
+def get_all_check_for_technician(email):
+    flights = db.session.query(Technician).filter_by(email=email).first().flights
+    return flights
+
+#Expected income = capacity * price
 # en pahalı bilet 
+def get_most_expensive_sold_ticket():
+    ticket = db.session.query(Ticket).filter(Ticket.last_price != None).order_by(desc(Ticket.last_price)).first()
+    print(type(ticket))
+    return ticket
+print("get_most_expensive_sold_ticket")
+ticket = get_most_expensive_sold_ticket()
+print(ticket.price)
+
 # en çok para getiren uçuş
+def get_most_income_flight():
+    income = func.sum(Ticket.last_price).label('income')
+    most_income_flight_id, income = db.session.query(Ticket.flight_id,income).filter(Ticket.last_price != None).group_by(Ticket.flight_id).order_by(income.desc()).first()
+    most_income_flight = db.session.query(Flight).filter_by(id=most_income_flight_id).first()
+    print(most_income_flight.id)
+    print(income)
+    return most_income_flight,income
+get_most_income_flight()
+
+def get_min_income_flight():
+    income = func.sum(Ticket.last_price).label('income')
+    min_income_flight_id, income = db.session.query(Ticket.flight_id,income).filter(Ticket.last_price != None).group_by(Ticket.flight_id).order_by(income.asc()).first()
+    min_income_flight = db.session.query(Flight).filter_by(id=min_income_flight_id).first()
+    print(min_income_flight.id)
+    print(income)
+    return min_income_flight,income
+get_min_income_flight()
+
+def get_min_income_rate_flight():
+    return 1
+def get_max_income_rate_flight():
+    return 1
+
+def get_client_booking_info(client_email):
+    return 1
+
+
+
 # yenisini ekle  
 # en az para getiren uçuş 
 
 # admin yeni uçuş ekler pilot ve crew otomatik 
-
+#verilen rotaya yeni uçuş ekle otomatik 
+def add_new_flight_with_route(departure_date,departure_city,arrival_city):
+    return 1

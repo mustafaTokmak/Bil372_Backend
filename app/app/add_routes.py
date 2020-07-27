@@ -1,4 +1,4 @@
-from model import db
+"""from model import db
 from model import Client,Booking,Flight,Airport,Route,Country,City,Departure_Airport,Arrival_Airport,Aircraft_Model,Aircraft,Pilot,Technician,Cabin_Member,Client,Ticket,Admin,Check
 import random
 import hashlib
@@ -372,11 +372,13 @@ for i in range(300):
         actual_arrival_date_time=actual_arrival_date_time,
         estimated_departure_date_time=estimated_departure_date_time,
         estimated_arrival_date_time=estimated_arrival_date_time,
+        flight_duration=flight_duration,
         pilots=pilots,cabin_crew=cabin_crew)
     else:
         flight_obj = Flight(route=route,aircraft=aircraft,
         estimated_departure_date_time=estimated_departure_date_time,
         estimated_arrival_date_time=estimated_arrival_date_time,
+        flight_duration=flight_duration,
         pilots=pilots,cabin_crew=cabin_crew)
     db.session.add(flight_obj)
     db.session.commit()
@@ -570,4 +572,4 @@ for i in range(2000):
 
 last = time.time()
 t = last - start
-print("time"+str(t))
+print("time"+str(t))"""
