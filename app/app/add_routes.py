@@ -8,20 +8,37 @@ import string
 db.create_all()
 import time 
 start = time.time()
-"""
+
+with open('routes.csv','r') as f:
+    data = f.readlines()
 with open('routes.csv','r') as f:
     data = f.readlines()
 
+
+required_airport_ids = []
+route_ids = []
+for i in range(len(data)):
+    pc = data[i].split(',')[0]
+    if pc != 'PC':
+            continue
+    airport_id1 = data[i].split(',')[3]
+    airport_id2 = data[i].split(',')[5]
+    if not airport_id1 in required_airport_ids:
+            required_airport_ids.append(airport_id1)
+    if not airport_id2 in required_airport_ids:
+            required_airport_ids.append(airport_id2)
+    
 counter = 0
 
 
 
-with open('airports.csv','r') as f:
+with open('new_airports.csv','r') as f:
     data = f.readlines()
 cities = []
 counter = 0
 for row in data:
-    
+    airport_id = row.split(',')[0]
+   
     airport_name = row.split(',')[1]
     city = row.split(',')[2][1:-1]
    
@@ -40,7 +57,7 @@ for row in data:
     else:
         db.session.add(city_obj)
     
-    airport_obj = Airport(name=airport_name,city=city_obj,code=code)
+    airport_obj = Airport(name=airport_name,city=city_obj,code=code,id=airport_id)
     if (Airport.query.filter_by(city=city_obj,name=airport_name).first()):
         airport_obj = Airport.query.filter_by(city=city_obj,name=airport_name).first()
     else:
@@ -56,29 +73,22 @@ t = last - start
 print("time"+str(t))
 
 counter=0
-with open('routes.csv','r') as f:
+with open('new_routes.csv','r') as f:
     data = f.readlines()
 
-FR_rows = []
 for row in data:
-    airline_id = row.split(',')[0]
-    if airline_id == "FR":
-        FR_rows.append(row)
-print(len(FR_rows))
-    
-
-for row in FR_rows:
     airline_id = row.split(',')[0]
 
    
+    departure_airport_id = (row.split(',')[3])
+    arrival_airport_id = (row.split(',')[5])
+    print(departure_airport_id)
+    print(arrival_airport_id)
     
-    try:
-        departure_airport_id = int(row.split(',')[3])
-        arrival_airport_id = int(row.split(',')[5])
-    except:
-        continue
     departure_airport = Airport.query.filter_by(id=departure_airport_id).first()
+    print(departure_airport.name)
     arrival_airport = Airport.query.filter_by(id=arrival_airport_id).first()
+    print(arrival_airport.name)
 
 
     dep_obj = Departure_Airport(dep_airport=departure_airport)
@@ -86,13 +96,13 @@ for row in FR_rows:
         dep_obj = Departure_Airport.query.filter_by(dep_airport=departure_airport).first()
     else:
         db.session.add(dep_obj)
-
+    print(dep_obj.id)
     arr_obj = Arrival_Airport(ar_airport=arrival_airport)
     if Arrival_Airport.query.filter_by(ar_airport=arrival_airport).first():
         arr_obj = Arrival_Airport.query.filter_by(ar_airport=arrival_airport).first()
     else:
         db.session.add(arr_obj)
-     
+    print(arr_obj.id)
     route_obj = Route(departure_airport=dep_obj,arrival_airport=arr_obj)
     if Route.query.filter_by(departure_airport=dep_obj,arrival_airport=arr_obj).first():
         route_obj = Route.query.filter_by(departure_airport=dep_obj,arrival_airport=arr_obj).first()
@@ -147,7 +157,7 @@ print("time"+str(t))
 
 
 
-for i in range(30):
+for i in range(300):
     tail_num1 = random.randint(10,99)
     tail_num2 = random.randint(10,1000)
     letter = random.choice(string.ascii_letters).upper()
@@ -259,14 +269,15 @@ aircrafts = Aircraft.query.all()
 all_pilots = Pilot.query.all()
 cabin_members = Cabin_Member.query.all()
 counter = 0 
-for i in range(1000):
+for i in range(5000):
     #Flight time
     flight_duration = random.randint(50,750)
     base_date = datetime.datetime.now() - datetime.timedelta(days=180)
     extra_hours = random.randint(10,365*24)
     estimated_departure_date_time = base_date + datetime.timedelta(hours=extra_hours)
     estimated_arrival_date_time = estimated_departure_date_time + datetime.timedelta(minutes=flight_duration)
-
+    if(counter % 100 == 0 ):
+        print(counter)
     now = datetime.datetime.now()
     delay = random.randint(30,400)
     is_delayed = random.randint(1,11) % 5 == 0 # %20 ihtimalle delay var 
@@ -289,7 +300,7 @@ for i in range(1000):
     aircraft_counter = 0
     while(True):
         aircraft_counter += 1
-        if aircraft_counter > 30:
+        if aircraft_counter > 250:
             is_aircraft_assigned = False
             break
         aircraft_index = random.randint(0,len(aircrafts)-1)
@@ -319,7 +330,7 @@ for i in range(1000):
         while(True):
             pilot_counter += 1
             #avoid infinite loop
-            if pilot_counter > 30:
+            if pilot_counter > 500:
                  is_pilot_assigned = False
             pilot_index = random.randint(0,len(all_pilots)-1)
             pilot = all_pilots[pilot_index]
@@ -353,7 +364,7 @@ for i in range(1000):
             avaliable = True
             cabin_member_counter += 1
             #avoid infinite loop
-            if cabin_member_counter > 30:
+            if cabin_member_counter > 500:
                 is_cabin_member_assigned = False
             for f in cabin_member.flights:
                
@@ -507,21 +518,99 @@ now = datetime.datetime.now()
 not_avaliable_clients = db.session.query(Client).join(Client.reservations).join(Booking.tickets).join(Ticket.flight).filter(Flight.estimated_departure_date_time<now)
 avaliable_clients = Client.query.except_all(not_avaliable_clients)
 
-"""
+
 all_tickets = Ticket.query.all()
 all_clients = Client.query.all()
+all_flights = Flight.query.all()
+
 
 last = time.time()
 t = last - start
 print("time"+str(t))
 
-for i in range(10000):
+counter = 0
+for flight in all_flights:
+    aircraft_model = flight.aircraft.model
+    capacity = aircraft_model.number_of_col * aircraft_model.number_of_row
+    used_capacity = int(capacity*(random.randint(1,10)/10))
+    flight_tickets = flight.tickets
+    random.shuffle(flight_tickets)
+    flight_tickets = flight_tickets[:used_capacity]
+    arr_time = flight.estimated_arrival_date_time
+    dep_time = flight.estimated_departure_date_time
+
+    print(flight.id)
+    for ticket in flight_tickets:
+        if not ticket.is_avaliable:
+            continue
+        client_counter = 0
+        client_found = False
+        client = None
+        for candidate_client in all_clients:
+            is_avaliable_client = True
+            for r in candidate_client.reservations:
+                for t in r.tickets:
+                    if not (t.flight.estimated_departure_date_time > arr_time or t.flight.estimated_arrival_date_time < dep_time ):
+                        is_avaliable_client = False
+                        break
+                    if not is_avaliable_client:
+                        break
+            if is_avaliable_client:
+                client = candidate_client
+                break
+            
+        
+        if not client:
+            break
+        counter += 1
+        client_bookings = client.reservations
+        is_new_booking = random.randint(1,100) % 2 == 0 
+        if is_new_booking and client_bookings:
+            booking_index = random.randint(0,len(client_bookings)-1)
+            booking_obj = client_bookings[booking_index]
+        else:
+            booking_code = random.randint(10*1000*1000,99*1000*1000)
+            booking_obj = Booking(client=client,booking_code=booking_code)
+            db.session.add(booking_obj)
+
+        #calculate last price
+        aircraft_model = ticket.flight.aircraft.model
+        capacity = aircraft_model.number_of_col * aircraft_model.number_of_row
+        sold = len(ticket.flight.tickets)
+        price = ticket.price
+        last_price = 0.5*price + (sold/capacity)*3*price # ilk bilet yarı fiyatı son bilet 3.5 kat fiyatı
+        is_avaliable = False
+        
+        ticket.last_price = last_price
+        ticket.booking = booking_obj
+        ticket.is_avaliable = is_avaliable
+        db.session.add(ticket)
+
+    if (counter % 1000 == 0):
+        print(counter)
+        last = time.time()
+        t = last - start
+        print("time"+str(t))
+    db.session.commit()
+
+
+
+
+
+
+
+
+
+
+"""
+
+for i in range(200*1000):
     #all_tickets  = Ticket.query.all().filter_by(is_avaliable=True)
     ticket_index = random.randint(0,len(all_tickets)-1)
     ticket = all_tickets[ticket_index]
     if not ticket.is_avaliable:
         continue
-    print(i)
+    
     
 
     arr_time = ticket.flight.estimated_arrival_date_time
@@ -536,7 +625,6 @@ for i in range(10000):
         for r in client.reservations:
             for t in r.tickets:
                 if not (t.flight.estimated_departure_date_time > arr_time or t.flight.estimated_arrival_date_time < dep_time ):
-                    
                     is_avaliable_client = False
         if is_avaliable_client:
             break
@@ -563,13 +651,18 @@ for i in range(10000):
     ticket.booking = booking_obj
     ticket.is_avaliable = is_avaliable
     db.session.add(ticket)
-    db.session.commit()
+    if (i % 1000 == 0):
+        print(i)
+        last = time.time()
+        t = last - start
+        print("time"+str(t))
+        db.session.commit()
     
 
 
 
 
-
+"""
 
 last = time.time()
 t = last - start
