@@ -1,4 +1,4 @@
-"""from model import db
+from model import db
 from model import Client,Booking,Flight,Airport,Route,Country,City,Departure_Airport,Arrival_Airport,Aircraft_Model,Aircraft,Pilot,Technician,Cabin_Member,Client,Ticket,Admin,Check
 import random
 import hashlib
@@ -8,7 +8,7 @@ import string
 db.create_all()
 import time 
 start = time.time()
-
+"""
 with open('routes.csv','r') as f:
     data = f.readlines()
 
@@ -259,7 +259,7 @@ aircrafts = Aircraft.query.all()
 all_pilots = Pilot.query.all()
 cabin_members = Cabin_Member.query.all()
 counter = 0 
-for i in range(300):
+for i in range(1000):
     #Flight time
     flight_duration = random.randint(50,750)
     base_date = datetime.datetime.now() - datetime.timedelta(days=180)
@@ -399,7 +399,7 @@ for i in range(300):
     for row in range(1,number_of_row+1):
         for c in columns:
             seat_no = c.upper()+str(row)
-            ticket_obj = Ticket(seat_no=seat_no,flight=flight_obj,price=price)
+            ticket_obj = Ticket(seat_no=seat_no,flight=flight_obj,price=price,last_price=0)
             db.session.add(ticket_obj)
     db.session.commit()
 
@@ -507,7 +507,7 @@ now = datetime.datetime.now()
 not_avaliable_clients = db.session.query(Client).join(Client.reservations).join(Booking.tickets).join(Ticket.flight).filter(Flight.estimated_departure_date_time<now)
 avaliable_clients = Client.query.except_all(not_avaliable_clients)
 
-
+"""
 all_tickets = Ticket.query.all()
 all_clients = Client.query.all()
 
@@ -515,7 +515,7 @@ last = time.time()
 t = last - start
 print("time"+str(t))
 
-for i in range(2000):
+for i in range(10000):
     #all_tickets  = Ticket.query.all().filter_by(is_avaliable=True)
     ticket_index = random.randint(0,len(all_tickets)-1)
     ticket = all_tickets[ticket_index]
@@ -536,6 +536,7 @@ for i in range(2000):
         for r in client.reservations:
             for t in r.tickets:
                 if not (t.flight.estimated_departure_date_time > arr_time or t.flight.estimated_arrival_date_time < dep_time ):
+                    
                     is_avaliable_client = False
         if is_avaliable_client:
             break
@@ -572,4 +573,4 @@ for i in range(2000):
 
 last = time.time()
 t = last - start
-print("time"+str(t))"""
+print("time"+str(t))

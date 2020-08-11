@@ -5,6 +5,28 @@ from flask import request
 import random
 import json
 
+
+def find_user_type(email,password):
+    user_type = ""
+    print(db.session.query(Client).filter_by(email=email,password=password))
+    if db.session.query(Client).filter_by(email=email,password=password).first():
+        print("Client")
+        user_type = "Client"
+    if db.session.query(Cabin_Member).filter_by(email=email,password=password).first():
+        print("Cabin_Member")
+        user_type = "Cabin_Member"
+    if db.session.query(Pilot).filter_by(email=email,password=password).first():
+        print("Pilot")
+        user_type = "Pilot"
+    if db.session.query(Technician).filter_by(email=email,password=password).first():
+        print("Technician")
+        user_type = "Technician"
+    if db.session.query(Admin).filter_by(email=email,password=password).first():
+        print("Admin")
+        user_type = "Admin"
+    return user_type
+
+
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
@@ -29,6 +51,41 @@ def register_as_client():
         db.session.add(client)
         db.session.commit()
     return json.dumps(response)
+
+
+
+
+@app.route('/api/login', methods=['GET','POST'])
+def login():
+    response = {}
+    content = request.get_json()
+    email = content["email"]
+    password = content["password"]
+    user_type = find_user_type(email,password)
+    response["user_type"] = user_type
+    return json.dumps(response)
+
+@app.route('/api/get_user_reservations', methods=['GET','POST'])
+def get_user_reservations():
+    response = {}
+    content = request.get_json()
+    email = content["email"]
+    password = content["password"]
+    user_type = find_user_type(email,password)
+    response["user_type"] = user_type
+    return json.dumps(response)
+
+@app.route('/api/get_reservations_', methods=['GET','POST'])
+def login():
+    response = {}
+    content = request.get_json()
+    email = content["email"]
+    password = content["password"]
+    user_type = find_user_type(email,password)
+    response["user_type"] = user_type
+    return json.dumps(response)
+
+
 
 
 

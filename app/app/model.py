@@ -62,7 +62,7 @@ class Flight(db.Model):
 
     aircraft_id = db.Column(db.Integer, db.ForeignKey('aircraft.id'))
     aircraft = db.relationship("Aircraft", back_populates="used_flights")
-    #flight_duration = db.Column(db.Integer)
+    flight_duration = db.Column(db.Integer)
     actual_departure_date_time = db.Column(db.DateTime)
     actual_arrival_date_time = db.Column(db.DateTime)
     

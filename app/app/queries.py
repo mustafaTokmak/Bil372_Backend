@@ -119,16 +119,18 @@ cabin_member_email = "mustafa7565tokmak4096@airline.com"
 
 flights = get_cabin_member_flights(cabin_member_email)
 print("get_cabin_member_flights")
-print(len(flights))
+print((flights))
 
 
 # en çok uçan pilot 
 #TODO flight duration eklenecek
 def get_most_flights_pilot():
-    a = db.session.query(Pilot).join(Pilot.flights).query(func.sum(Flight.score).label("total_score"))
-    print(len(a))
-#print("get_most_flights_pilot")
-#get_most_flights_pilot()
+    count = func.count(Flight.id).label('count')
+    min_income_flight_id = db.session.query(Flight.id,Flight.pilots,count).group_by(Pilot.id).all()
+    print(min_income_flight_id)
+    print(len(min_income_flight_id))
+print("get_most_flights_pilot")
+get_most_flights_pilot()
 
 
 
