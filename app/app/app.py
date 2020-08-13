@@ -49,21 +49,6 @@ def logout():
     return 'Logout'
 
 
-@app.route('/api/register_as_client', methods=['GET','POST'])
-def register_as_client():
-    response = {}
-    content = request.get_json()
-    for i in range(10):
-        client_id = random.randint(0,100000000)
-        phone_number = "admin" + str(random.randint(0,10000000000))
-        email = "admin@example.com" + str(random.randint(0,10000000000))
-        password = str(random.randint(0,10000000000))
-        first_name = "mustafa" + str(random.randint(0,10000000000))
-        
-        client = Client(phone_number=phone_number,email=email,password=password,first_name=first_name)
-        db.session.add(client)
-        db.session.commit()
-    return json.dumps(response)
 
 
 
@@ -98,6 +83,7 @@ def get_user_reservations_db(email):
             flight["route"] = route_string
             reservation["flights"].append(flight)
         user_reservations.append(reservation)
+    print(user_reservations)
     return user_reservations
 
 @app.route('/api/get_user_reservations', methods=['GET','POST'])
@@ -271,11 +257,32 @@ def get_flight_info_with_flight_id():
 
 
 
-def register_as_client(firstname,lastname,password_plain_text,email,phone_number):
-    m = hashlib.sha256()
-    m.update(password_plain_text.encode())
-    password = m.digest().hex()
-    client_obj = Client(firstname=firstname,lastname=lastname,phone_number=phone_number,email=email,password=password)
+def register_as_client(firstname,lastname,password,email,phone_number):
+    client = db.session.query(Client).filter_by(email=email).first()
+    print(client)
+    if client:
+        return False
+    client = Client(firstname=firstname,lastname=lastname,phone_number=phone_number,email=email,password=password)
+    db.session.add(client)
+    db.session.commit()
+    return True
+
+@app.route('/api/register_client', methods=['GET','POST'])
+def register_client():
+    response = {}
+    content = request.get_json()
+    print(content)
+    firstname = content["firstname"]
+    lastname = content["lastname"]
+    password = content["password"]
+    email = content["email"]
+    phone_number = content["phone_number"]
+
+    result = register_as_client(firstname,lastname,password,email,phone_number)
+
+    response["result"] = result 
+    return json.dumps(content)
+
 
 def assign_client_to_flight(flight_id,email):
     dep_city = db.session.query(City).filter_by(name=dep_city_name).first()
@@ -314,20 +321,70 @@ def assign_client_to_flight(flight_id,email):
 def register_booking():
     response = {}
     content = request.get_json()
+    print(content)
     email = content["email"]
     flights = content["flights_str"].split(",")[1:]
+
+
+    client = db.session.query(Client).filter_by(email=email).first()
+
+    booking_obj = Booking(client=client,booking_code=random.randint(1000*1000,9999*1000))
+    db.session.add(booking_obj) 
+    db.session.commit()
+
+
+    booking_tickets = []
+
     for flight_id in flights:
         if not flight_id:
             continue
+        flight = db.session.query(Flight).filter_by(id=flight_id).first()
+        tickets = flight.tickets
+        ticket_index = random.randint(0,len(tickets)-1)
+        ticket = tickets[ticket_index]
+        
+
+        ticket = flight.tickets[0]
+        aircraft_model = flight.aircraft.model
+        capacity = aircraft_model.number_of_col * aircraft_model.number_of_row
+        sold = len(ticket.flight.tickets)
+        price = ticket.price
+        last_price = 0.5*price + (sold/capacity)*3*price
+
+        ticket.last_price = last_price
+        ticket.is_avaliable = False
         print(flight_id)
+        ticket.booking = booking_obj
+        
+        db.session.add(ticket)
+        db.session.commit()
+    print(booking_tickets)
+
+   
+
         
     return json.dumps(response)
 
 
-        
+@app.route('/api/sql', methods=['GET','POST'])
+def sql():
+    response = {}
+    content = request.get_json()
+    print(content)
+    sql = content["sql"]
+    resultproxy = db.session.execute(sql)
 
-        
-    return json.dumps(response)
+    d, a = {}, []
+    for rowproxy in resultproxy:
+        # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
+        for column, value in rowproxy.items():
+            # build up the dictionary
+            d = {**d, **{column: value}}
+        a.append(d)
+    #response["result"] = result
+    
+    response["result"] = a
+    return json.dumps(response,indent=True)
 
 
 
