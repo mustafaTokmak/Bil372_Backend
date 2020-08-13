@@ -40,7 +40,7 @@ print(len(a))
 
 def get_pilot_flights(email):
     
-    pilot_flights = 
+    pilot_flights = 1
     return pilot_flights
 
 def get_booking_tickets_db(booking_id):
@@ -148,3 +148,19 @@ def create_new_booking(email,ticket_ids):
 flight_id = 1
 tickets = get_avaliable_tickets_for_flight(flight_id)
 print(json.dumps(tickets,indent=True))
+
+
+
+cities = db.session.query(City).all()
+print("{",end="")
+for i in cities:
+    print("\""+i.name+"\",",end="")
+print("}")
+
+
+
+
+
+
+
+
