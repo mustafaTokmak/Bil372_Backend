@@ -379,6 +379,8 @@ def sql():
         # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
         for column, value in rowproxy.items():
             # build up the dictionary
+            if type(value) == datetime.datetime:
+                value = str(value)
             d = {**d, **{column: value}}
         a.append(d)
     #response["result"] = result
